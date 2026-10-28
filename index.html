@@ -644,6 +644,28 @@
   document.getElementById('whatsappFloat').href = waUrl;
   document.querySelectorAll('.wa-link').forEach(a => a.href = waUrl);
 
+  // Seguimiento de clics en Google Analytics (WhatsApp y correo de ventas)
+  function trackContact(eventName, a){
+    if (typeof gtag !== 'function') return;
+    const zone = a.id === 'whatsappFloat' ? 'boton_flotante'
+               : a.closest('footer') ? 'pie_de_pagina'
+               : a.closest('#contacto') ? 'seccion_contacto' : 'otro';
+    gtag('event', eventName, {
+      contact_location: zone,
+      link_url: a.href,
+      transport_type: 'beacon'
+    });
+  }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if (!a) return;
+    if (a.id === 'whatsappFloat' || a.classList.contains('wa-link')) {
+      trackContact('contact_whatsapp', a);
+    } else if ((a.getAttribute('href') || '').startsWith('mailto:')) {
+      trackContact('contact_email', a);
+    }
+  });
+
   const header = document.getElementById('siteHeader');
   window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 30);
